@@ -29,7 +29,7 @@ func main() {
 		jobs = append(jobs, jobItemsOnPage...)
 	}
 
-	fmt.Println(jobs[0].company)
+	fmt.Println(jobs[0])
 
 }
 
@@ -39,18 +39,12 @@ func getPage(page int) []jobItem {
 	pageURL := baseURL + "&start=" + strconv.Itoa(page*50)
 
 	res, err := http.Get(pageURL)
-	if err != nil {
-		log.Fatal(err)
-	}
+	CheckError(err)
 	defer res.Body.Close()
-	if res.StatusCode != 200 {
-		log.Fatalf("Status code err: %d %s", res.StatusCode, res.Status)
-	}
+	CheckCode(res)
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	CheckError(err)
 	jobCards := doc.Find(".jobsearch-SerpJobCard")
 	jobCards.Each(func(i int, card *goquery.Selection) {
 		job := initJobItem(card)
@@ -62,11 +56,11 @@ func getPage(page int) []jobItem {
 
 func initJobItem(card *goquery.Selection) jobItem {
 	id, _ := card.Attr("data-jk")
-	title := card.Find(".title > a").Text()
-	company := card.Find(".company > a").Text()
-	location := card.Find(".location").Text()
-	salary := card.Find(".salaryText").Text()
-	summary := card.Find(".summary").Text()
+	title := CleanString(card.Find(".title > a").Text())
+	company := CleanString(card.Find(".company > a").Text())
+	location := CleanString(card.Find(".location").Text())
+	salary := CleanString(card.Find(".salaryText").Text())
+	summary := CleanString(card.Find(".summary").Text())
 
 	return jobItem{id: id, title: title, company: company, location: location, salary: salary, summary: summary}
 }
@@ -75,13 +69,9 @@ func initJobItem(card *goquery.Selection) jobItem {
 func getNumOfPages() int {
 	pages := 0
 	res, err := http.Get(baseURL)
-	if err != nil {
-		log.Fatal(err)
-	}
+	CheckError(err)
 	defer res.Body.Close()
-	if res.StatusCode != 200 {
-		log.Fatalf("Status code err: %d %s", res.StatusCode, res.Status)
-	}
+	CheckCode(res)
 
 	// Load HTML document
 	doc, err := goquery.NewDocumentFromReader(res.Body)
