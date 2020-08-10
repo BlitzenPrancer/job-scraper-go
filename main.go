@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
@@ -34,6 +36,7 @@ func main() {
 		jobs = append(jobs, jobItemsOnPage...)
 	}
 
+	writeJobs(jobs)
 	fmt.Println("Done")
 }
 
@@ -93,4 +96,23 @@ func getNumOfPages() int {
 
 	pages = doc.Find(".pagination-list a").Length()
 	return pages
+}
+
+// wirteJobs saves jobs into .csv file
+func writeJobs(jobs []jobItem) {
+	file, err := os.Create("jobs.csv")
+	CheckError(err)
+
+	w := csv.NewWriter(file)
+	defer w.Flush()
+
+	headers := []string{"Link", "Title", "Company", "Location", "Salary", "Summary"}
+	wErr := w.Write(headers)
+	CheckError(wErr)
+
+	for _, job := range jobs {
+		jobSlice := []string{"https://www.indeed.com/viewjob?jk=" + job.id, job.title, job.company, job.location, job.salary, job.summary}
+		jwErr := w.Write(jobSlice)
+		CheckError(jwErr)
+	}
 }
