@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo"
-	"github.com/minashin/job-scraper"
+	"github.com/BlitzenPrancer/job-scraper"
 )
 
 const fileName string = "jobs.csv"
